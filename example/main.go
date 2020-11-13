@@ -15,7 +15,7 @@ func main() {
 	println(b.String())
 	b.AppendBit(0)
 	println(b.String())
-	b.AppendByte(0xac)
+	b.AppendBits(0xac, 4)
 	println(b.String())
 
 }

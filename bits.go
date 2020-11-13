@@ -60,7 +60,7 @@ func (b *Bits) AppendBits(by byte, offset int) {
 		}
 	} else {
 		if b.offset+offset > 8 {
-			ey := (by >> (offset - 8 + b.offset)) & (0xff >> (offset - 8 + b.offset))
+			ey := (by >> (offset - 8 + b.offset)) & (0xff >> b.offset)
 			zy := (b.data[len(b.data)-1] << (8 - b.offset)) & 0xff
 			ny := by & (0xff >> (8 - offset + 8 - b.offset))
 			b.data[len(b.data)-1] = ey | zy
