@@ -7,14 +7,13 @@ import (
 )
 
 func main() {
-	x0 := gobits.FromByte(0, 1)
-	println(x0.String())
-	x10 := gobits.FromByte(2, 2)
-	println(x10.String())
-	x110 := gobits.FromByte(6, 3)
-	println(x110.String())
-	x1110 := gobits.FromByte(14, 4)
-	println(x1110.String())
+	b := gobits.New()
+
+	b.AppendBits(0xab, 5)
+	println(b.String())
+	b.AppendByte(0xcd)
+	b.AppendBits(0xcd, 7)
+	println(b.String())
 }
 
 func printByteArray(bts []byte) {

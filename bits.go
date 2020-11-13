@@ -23,7 +23,7 @@ func FromBytes(bys []byte) *Bits {
 }
 func FromByte(by byte, offset int) *Bits {
 	if offset < 0 || offset >= 8 {
-		log.Fatal(errors.New("offset out of range."))
+		log.Fatal("offset out of range.")
 	}
 	return &Bits{
 		data:   []byte{by & (0xFF >> (8 - offset))},
@@ -31,49 +31,58 @@ func FromByte(by byte, offset int) *Bits {
 	}
 }
 func (b *Bits) Len() int {
-	return len(b.data)*8 - (8 - b.offset)
+	if b.offset == 0 {
+		return len(b.data) * 8
+	} else {
+		return len(b.data)*8 + b.offset - 8
+	}
 }
-func (b *Bits) Append(bts *Bits) error {
+func (b *Bits) Append(bts *Bits) {
 	l := len(bts.data)
 	for i, v := range bts.data {
 		if i == l-1 {
 			b.AppendBits(v, bts.offset)
 		} else {
-			b.AppendByte(v)
+			b.AppendBits(v, 8)
 		}
 	}
-	return nil
 }
-func (b *Bits) AppendBits(by byte, offset int) error {
-	if offset < 0 || offset >= 8 {
-		return errors.New("offset out of range.")
+func (b *Bits) AppendBits(by byte, offset int) {
+	if offset <= 0 || offset > 8 {
+		log.Fatal("offset out of range.")
 	}
-	
-	return nil
+	if b.offset == 0 {
+		ny := by & (0xff >> (8 - offset))
+		b.data = append(b.data, ny)
+		b.offset = b.offset + offset
+		if b.offset == 8 {
+			b.offset = 0
+		}
+	} else {
+		if b.offset+offset > 8 {
+			ey := (by >> (offset - 8 + b.offset)) & (0xff >> (8 - b.offset))
+			zy := (b.data[len(b.data)-1] << (8 - b.offset)) & 0xff
+			ny := by & (0xff >> (8 - offset + 8 - b.offset))
+			b.data[len(b.data)-1] = ey | zy
+			b.data = append(b.data, ny)
+			b.offset = b.offset + offset - 8
+		} else {
+			ey := by & (0xff >> (8 - offset))
+			zy := (b.data[len(b.data)-1] << (offset)) & (0xff << (8 - offset - b.offset))
+			//fmt.Printf("d:%#08b,%#08b\n", ey, zy)
+			b.data[len(b.data)-1] = ey | zy
+			b.offset = b.offset + offset
+			if b.offset == 8 {
+				b.offset = 0
+			}
+		}
+	}
 }
 func (b *Bits) AppendBit(by byte) {
-	ap := (by >> (8 - b.offset)) | ((by << b.offset) & (0xff >> (8 - b.offset - 1)))
-	//fmt.Printf("debug: %d, %#08b\n", b.offset, ap)
-	if b.offset == 0 {
-		b.data = append(b.data, ap)
-	} else {
-		b.data[len(b.data)-1] = b.data[len(b.data)-1] | ap
-	}
-	b.offset = b.offset + 1
-	if b.offset >= 8 {
-		b.offset = 0
-	}
+	b.AppendBits(by, 1)
 }
-func (b *Bits) AppendByte(by byte) error {
-	if b.offset == 0 {
-		b.data = append(b.data, by)
-	} else {
-		ty := (b.data[len(b.data)-1] & (0xff >> b.offset)) | (by & (0xff << (8 - b.offset)))
-		ny := by & (0xff >> (8 - b.offset))
-		b.data = append(b.data[:len(b.data)-1], ty)
-		b.data = append(b.data, ny)
-	}
-	return nil
+func (b *Bits) AppendByte(by byte) {
+	b.AppendBits(by, 8)
 }
 func (b *Bits) Bytes() []byte {
 	return b.data
