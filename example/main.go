@@ -9,11 +9,15 @@ import (
 func main() {
 	b := gobits.New()
 
-	b.AppendBits(0xab, 5)
+	b.AppendBit(1)
 	println(b.String())
-	b.AppendByte(0xcd)
-	b.AppendBits(0xcd, 7)
+	b.AppendBit(0)
 	println(b.String())
+	b.AppendBit(0)
+	println(b.String())
+	b.AppendByte(0xac)
+	println(b.String())
+
 }
 
 func printByteArray(bts []byte) {
