@@ -37,6 +37,13 @@ func (b *Bits) Len() int {
 		return len(b.data)*8 + b.offset - 8
 	}
 }
+func (b *Bits) Offset() int {
+	return b.offset
+}
+func (b *Bits) SetOffset(ofs int) {
+	b.offset = ofs
+	b.data[len(b.data)-1] = (b.data[len(b.data)-1] & (0xff >> (8 - ofs)))
+}
 func (b *Bits) Append(bts *Bits) {
 	l := len(bts.data)
 	for i, v := range bts.data {
@@ -104,7 +111,7 @@ func (b *Bits) String() string {
 	return s.String()
 }
 func (b *Bits) Itor() *Iterator {
-	return &Iterator{bts: b, idx: 0, offset: 7}
+	return &Iterator{bts: b, idx: 0, offset: 0}
 }
 
 type Iterator struct {
@@ -114,7 +121,7 @@ type Iterator struct {
 }
 
 func (it *Iterator) Next() (by byte, idx int, err error) {
-	if it.idx > (len(it.bts.data)-1) || (it.idx == (len(it.bts.data)-1) && it.offset < it.bts.offset) {
+	if it.idx > (len(it.bts.data)-1) || (it.idx == (len(it.bts.data)-1) && it.offset >= it.bts.offset) {
 		by = 0
 		idx = 0
 		err = errors.New("end of iterator.")
@@ -122,16 +129,16 @@ func (it *Iterator) Next() (by byte, idx int, err error) {
 	}
 	x := it.bts.data[it.idx]
 	if it.idx == (len(it.bts.data) - 1) {
-		by = ((x >> (it.offset - it.bts.offset)) & 0x01)
+		by = ((x >> (it.bts.offset - it.offset - 1)) & 0x01)
 	} else {
-		by = ((x >> it.offset) & 0x01)
+		by = ((x >> (7 - it.offset)) & 0x01)
 	}
-	idx = it.idx*8 + (7 - it.offset)
+	idx = it.idx*8 + (it.offset)
 	err = nil
-	it.offset = it.offset - 1
-	if it.offset < 0 {
+	it.offset = it.offset + 1
+	if it.offset == 8 {
 		it.idx = it.idx + 1
-		it.offset = 7
+		it.offset = 0
 	}
 	return
 }
