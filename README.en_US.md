@@ -1,6 +1,6 @@
-English | [简体中文](README.md)
-
 # gobits
+
+English | [简体中文](README.md)
 
 A Go module for bit array.
 

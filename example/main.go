@@ -17,7 +17,7 @@ func main() {
 	println(b.String())
 	b.AppendBits(0xac, 4)
 	println(b.String())
-	
+
 	it := b.Itor()
 	for {
 		ch, idx, err := it.Next()

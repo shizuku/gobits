@@ -1,6 +1,6 @@
-[English](README.en_US.md) | 简体中文
-
 # gobits
+
+[English](README.en_US.md) | 简体中文
 
 bit 数组的 Go 模块。
 

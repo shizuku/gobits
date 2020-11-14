@@ -7,20 +7,29 @@ import (
 	"strings"
 )
 
+// Bits :
 type Bits struct {
 	data   []byte
 	offset int
 }
 
+// New :
 func New() *Bits {
-	return &Bits{}
+	return &Bits{
+		data:   []byte{0},
+		offset: 0,
+	}
 }
+
+// FromBytes :
 func FromBytes(bys []byte) *Bits {
 	return &Bits{
 		data:   bys,
 		offset: 0,
 	}
 }
+
+// FromByte :
 func FromByte(by byte, offset int) *Bits {
 	if offset < 0 || offset >= 8 {
 		log.Fatal("offset out of range.")
@@ -30,20 +39,27 @@ func FromByte(by byte, offset int) *Bits {
 		offset: offset,
 	}
 }
+
+// Len :
 func (b *Bits) Len() int {
 	if b.offset == 0 {
 		return len(b.data) * 8
-	} else {
-		return len(b.data)*8 + b.offset - 8
 	}
+	return len(b.data)*8 + b.offset - 8
 }
+
+// Offset :
 func (b *Bits) Offset() int {
 	return b.offset
 }
+
+// SetOffset :
 func (b *Bits) SetOffset(ofs int) {
 	b.offset = ofs
 	b.data[len(b.data)-1] = (b.data[len(b.data)-1] & (0xff >> (8 - ofs)))
 }
+
+// Append :
 func (b *Bits) Append(bts *Bits) {
 	l := len(bts.data)
 	for i, v := range bts.data {
@@ -54,6 +70,8 @@ func (b *Bits) Append(bts *Bits) {
 		}
 	}
 }
+
+// AppendBits :
 func (b *Bits) AppendBits(by byte, offset int) {
 	if offset <= 0 || offset > 8 {
 		log.Fatal("offset out of range.")
@@ -85,12 +103,18 @@ func (b *Bits) AppendBits(by byte, offset int) {
 		}
 	}
 }
+
+// AppendBit :
 func (b *Bits) AppendBit(by byte) {
 	b.AppendBits(by, 1)
 }
+
+// AppendByte :
 func (b *Bits) AppendByte(by byte) {
 	b.AppendBits(by, 8)
 }
+
+// Bytes :
 func (b *Bits) Bytes() []byte {
 	return b.data
 }
@@ -110,21 +134,25 @@ func (b *Bits) String() string {
 	}
 	return s.String()
 }
+
+// Itor :
 func (b *Bits) Itor() *Iterator {
 	return &Iterator{bts: b, idx: 0, offset: 0}
 }
 
+// Iterator :
 type Iterator struct {
 	bts    *Bits
 	idx    int
 	offset int
 }
 
+// Next :
 func (it *Iterator) Next() (by byte, idx int, err error) {
 	if it.idx > (len(it.bts.data)-1) || (it.idx == (len(it.bts.data)-1) && it.offset >= it.bts.offset) {
 		by = 0
 		idx = 0
-		err = errors.New("end of iterator.")
+		err = errors.New("end of iterator")
 		return
 	}
 	x := it.bts.data[it.idx]
